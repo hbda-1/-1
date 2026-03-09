@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间 {{ room_id }} - 谁是卧底</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #2d3748;
+            font-size: 24px;
+        }
+        .header .room-id {
+            color: #4299e1;
+            font-weight: bold;
+        }
+        .user-info {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .user-info .role {
+            color: #e53e3e;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .user-info .word {
+            font-size: 20px;
+            font-weight: bold;
+            color: #48bb78;
+            margin-top: 5px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        .section h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .player-item {
+            background: #f7fafc;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .eliminated {
+            color: #718096;
+            text-decoration: line-through;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .start-btn {
+            background: #48bb78;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .start-btn:hover {
+            background: #38a169;
+        }
+        .vote-btn {
+            background: #4299e1;
+            color: white;
+            margin-top: 10px;
+        }
+        .vote-btn:hover {
+            background: #3182ce;
+        }
+        .reset-btn {
+            background: #e53e3e;
+            color: white;
+            margin-top: 10px;
+        }
+        .reset-btn:hover {
+            background: #c53030;
+        }
+        .voice-section {
+            background: #fdf2f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .voice-btn {
+            background: #9f7aea;
+            color: white;
+            margin: 5px;
+        }
+        .voice-btn:hover {
+            background: #805ad5;
+        }
+        .win-result {
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: #48bb78;
+            margin: 20px 0;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部信息 -->
+        <div class="header">
+            <h1>房间号：<span class="room-id">{{ room_id }}</span></h1>
+            {% if is_playing %}
+            <p>第 {{ round_num }} 轮</p>
+            {% endif %}
+        </div>
+
+        <!-- 个人信息 -->
+        <div class="user-info">
+            <p>你的昵称：{{ user }}</p>
+            {% if not is_waiting %}
+            <p class="role">你的身份：{{ role_cn }}</p>
+            <p class="word">你的词语：{{ my_word }}（{{ word_type }}）</p>
+            {% endif %}
+        </div>
+
+        <!-- 语音聊天区域 -->
+        <div class="voice-section">
+            <h3>语音交流 🎤</h3>
+            <button class="voice-btn" id="startVoice">开启语音</button>
+            <button class="voice-btn" id="stopVoice" disabled>关闭语音</button>
+            <p style="font-size: 14px; color: #718096; margin-top: 10px;">
+                发言时请开启，发言结束后关闭
+            </p>
+        </div>
+
+        <!-- 等待阶段 -->
+        {% if is_waiting %}
+        <div class="section">
+            <h3>等待其他玩家加入</h3>
+            <div class="player-list">
+                {% for p in all_players %}
+                <div class="player-item">{{ p }}</div>
+                {% endfor %}
+            </div>
+            {% if is_host %}
+            <button class="start-btn" onclick="startGame()">开始游戏</button>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- 游戏进行中 -->
+        {% if is_playing and not win_result %}
+        <div class="section">
+            <h3>存活玩家</h3>
+            <div class="player-list">
+                {% for p in alive_players %}
+                <div class="player-item">{{ p }}</div>
+                {% endfor %}
+            </div>
+
+            <h3>已淘汰玩家</h3>
+            <div class="player-list">
+                {% for p in eliminated_players %}
+                <div class="player-item eliminated">{{ p }}</div>
+                {% endfor %}
+                {% if not eliminated_players %}
+                <p>暂无淘汰玩家</p>
+                {% endif %}
+            </div>
+
+            <h3>投票淘汰</h3>
+            <form method="POST" action="/vote">
+                <select name="target" required>
+                    {% for p in alive_players if p != user %}
+                    <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="vote-btn">提交投票</button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- 游戏结束 -->
+        {% if win_result %}
+        <div class="win-result">{{ win_result }}</div>
+        <form method="POST" action="/reset">
+            <button type="submit" class="reset-btn">重新开始</button>
+        </form>
+        {% endif %}
+
+        <!-- 离开房间 -->
+        <button style="background: #718096; color: white;" onclick="location.href='/'">
+            离开房间
+        </button>
+    </div>
+
+    <!-- 语音聊天核心代码（WebRTC） -->
+    <script>
+        // 语音相关变量
+        let mediaStream = null;
+        let audioContext = null;
+        let gainNode = null;
+        
+        // 按钮元素
+        const startBtn = document.getElementById('startVoice');
+        const stopBtn = document.getElementById('stopVoice');
+        
+        // 开启语音
+        startBtn.addEventListener('click', async () => {
+            try {
+                // 获取麦克风权限
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                });
+                
+                // 创建音频上下文
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                gainNode = audioContext.createGain();
+                
+                // 连接音频节点（播放自己的声音）
+                source.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                // 更新按钮状态
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                alert('语音已开启，可以开始发言！');
+            } catch (error) {
+                alert('获取麦克风权限失败，请允许麦克风访问！');
+                console.error(error);
+            }
+        });
+        
+        // 关闭语音
+        stopBtn.addEventListener('click', () => {
+            if (mediaStream) {
+                // 停止所有音频轨道
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            
+            // 更新按钮状态
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            alert('语音已关闭！');
+        });
+        
+        // 开始游戏（房主）
+        function startGame() {
+            fetch('/start', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    } else {
+                        response.text().then(msg => alert(msg));
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

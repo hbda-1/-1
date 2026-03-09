@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谁是卧底 - 在线版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #3182ce;
+        }
+        .join-btn {
+            background: #48bb78;
+        }
+        .join-btn:hover {
+            background: #38a169;
+        }
+        .hint {
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>谁是卧底 🕵️</h1>
+        
+        <!-- 创建房间 -->
+        <div class="section">
+            <h3>创建新房间</h3>
+            <form method="POST" action="/create">
+                <input type="text" name="name" placeholder="输入你的昵称" required>
+                <button type="submit">创建房间</button>
+            </form>
+        </div>
+        
+        <!-- 加入房间 -->
+        <div class="section">
+            <h3>加入已有房间</h3>
+            <form method="POST" action="/join">
+                <input type="text" name="name" placeholder="输入你的昵称" required>
+                <input type="text" name="room" placeholder="输入4位房间号" required>
+                <button type="submit" class="join-btn">加入房间</button>
+            </form>
+        </div>
+        
+        <div class="hint">
+            支持多人异地游玩 | 免费部署版
+        </div>
+    </div>
+</body>
+</html>
